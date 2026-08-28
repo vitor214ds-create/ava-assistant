@@ -10,8 +10,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 type Stats = { appointmentsToday: number; clients: number; conversations: number; aiAppointments: number };
-
-type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos";
+type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos" | "/conversas";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -56,7 +55,7 @@ function DashboardPage() {
         <NavLink to="/clientes" icon={UsersRound} label="Clientes" />
         <NavLink to="/profissionais" icon={UserRoundCog} label="Profissionais" />
         <NavLink to="/servicos" icon={BriefcaseBusiness} label="Serviços" />
-        <div className="flex items-center gap-3 rounded-xl px-3 py-3 text-slate-400"><MessageCircleMore className="h-4 w-4" />Conversas</div>
+        <NavLink to="/conversas" icon={MessageCircleMore} label="Conversas" />
         <div className="flex items-center gap-3 rounded-xl px-3 py-3 text-slate-400"><Sparkles className="h-4 w-4" />Configuração da IA</div>
       </nav>
       <button onClick={handleSignOut} className="absolute bottom-5 left-4 right-4 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900"><LogOut className="h-4 w-4" />Sair</button>
