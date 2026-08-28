@@ -16,6 +16,8 @@ const segments = [
   { value: "outro", label: "Outro" },
 ] as const;
 
+const fieldInputClass = "h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10";
+
 function SignupPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -81,10 +83,10 @@ function SignupPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="grid gap-5 sm:grid-cols-2">
-            <Field label="Seu nome" icon={UserRound}><input required value={form.fullName} onChange={(e) => setField("fullName", e.target.value)} placeholder="José Vitor" className="input-base" /></Field>
-            <Field label="Nome da empresa" icon={Building2}><input required value={form.companyName} onChange={(e) => setField("companyName", e.target.value)} placeholder="Clínica Exemplo" className="input-base" /></Field>
-            <Field label="E-mail" icon={Mail}><input required type="email" value={form.email} onChange={(e) => setField("email", e.target.value)} placeholder="voce@empresa.com" className="input-base" /></Field>
-            <Field label="Telefone" icon={Phone}><input required value={form.phone} onChange={(e) => setField("phone", e.target.value)} placeholder="(27) 99999-9999" className="input-base" /></Field>
+            <Field label="Seu nome" icon={UserRound}><input required value={form.fullName} onChange={(e) => setField("fullName", e.target.value)} placeholder="José Vitor" className={fieldInputClass} /></Field>
+            <Field label="Nome da empresa" icon={Building2}><input required value={form.companyName} onChange={(e) => setField("companyName", e.target.value)} placeholder="Clínica Exemplo" className={fieldInputClass} /></Field>
+            <Field label="E-mail" icon={Mail}><input required type="email" value={form.email} onChange={(e) => setField("email", e.target.value)} placeholder="voce@empresa.com" className={fieldInputClass} /></Field>
+            <Field label="Telefone" icon={Phone}><input required value={form.phone} onChange={(e) => setField("phone", e.target.value)} placeholder="(27) 99999-9999" className={fieldInputClass} /></Field>
 
             <label className="block sm:col-span-2"><span className="mb-2 block text-sm font-semibold text-slate-700">Segmento</span><select value={form.segment} onChange={(e) => setField("segment", e.target.value)} className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10">{segments.map((segment) => <option key={segment.value} value={segment.value}>{segment.label}</option>)}</select></label>
 
