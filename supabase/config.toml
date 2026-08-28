@@ -1,7 +1,1 @@
-project_id = "jopstagymximkbyxgfxr"
-
-[functions.site-chat]
-verify_jwt = false
-
-[functions.mercadopago-webhook]
-verify_jwt = false
+project_id = "alahmdlzbmmxgbkqrdux"
