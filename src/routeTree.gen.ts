@@ -20,6 +20,7 @@ import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as ConversasRouteImport } from './routes/conversas'
 import { Route as ConfiguracaoIaRouteImport } from './routes/configuracao-ia'
 import { Route as ConfiguracoesEmpresaRouteImport } from './routes/configuracoes-empresa'
+import { Route as HorariosRouteImport } from './routes/horarios'
 import { Route as ChatSlugRouteImport } from './routes/chat.$slug'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
@@ -34,6 +35,7 @@ const ServicosRoute = ServicosRouteImport.update({ id: '/servicos', path: '/serv
 const ConversasRoute = ConversasRouteImport.update({ id: '/conversas', path: '/conversas', getParentRoute: () => rootRouteImport } as any)
 const ConfiguracaoIaRoute = ConfiguracaoIaRouteImport.update({ id: '/configuracao-ia', path: '/configuracao-ia', getParentRoute: () => rootRouteImport } as any)
 const ConfiguracoesEmpresaRoute = ConfiguracoesEmpresaRouteImport.update({ id: '/configuracoes-empresa', path: '/configuracoes-empresa', getParentRoute: () => rootRouteImport } as any)
+const HorariosRoute = HorariosRouteImport.update({ id: '/horarios', path: '/horarios', getParentRoute: () => rootRouteImport } as any)
 const ChatSlugRoute = ChatSlugRouteImport.update({ id: '/chat/$slug', path: '/chat/$slug', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
@@ -49,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/conversas': typeof ConversasRoute
   '/configuracao-ia': typeof ConfiguracaoIaRoute
   '/configuracoes-empresa': typeof ConfiguracoesEmpresaRoute
+  '/horarios': typeof HorariosRoute
   '/chat/$slug': typeof ChatSlugRoute
 }
 export interface FileRoutesByTo extends FileRoutesByFullPath {}
@@ -66,11 +69,12 @@ export interface FileRoutesById {
   '/conversas': typeof ConversasRoute
   '/configuracao-ia': typeof ConfiguracaoIaRoute
   '/configuracoes-empresa': typeof ConfiguracoesEmpresaRoute
+  '/horarios': typeof HorariosRoute
   '/chat/$slug': typeof ChatSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas' | '/configuracao-ia' | '/configuracoes-empresa' | '/chat/$slug'
+  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas' | '/configuracao-ia' | '/configuracoes-empresa' | '/horarios' | '/chat/$slug'
   fileRoutesByTo: FileRoutesByTo
   to: FileRouteTypes['fullPaths']
   id: '__root__' | FileRouteTypes['fullPaths']
@@ -89,6 +93,7 @@ export interface RootRouteChildren {
   ConversasRoute: typeof ConversasRoute
   ConfiguracaoIaRoute: typeof ConfiguracaoIaRoute
   ConfiguracoesEmpresaRoute: typeof ConfiguracoesEmpresaRoute
+  HorariosRoute: typeof HorariosRoute
   ChatSlugRoute: typeof ChatSlugRoute
 }
 
@@ -106,6 +111,7 @@ declare module '@tanstack/react-router' {
     '/conversas': { id: '/conversas'; path: '/conversas'; fullPath: '/conversas'; preLoaderRoute: typeof ConversasRouteImport; parentRoute: typeof rootRouteImport }
     '/configuracao-ia': { id: '/configuracao-ia'; path: '/configuracao-ia'; fullPath: '/configuracao-ia'; preLoaderRoute: typeof ConfiguracaoIaRouteImport; parentRoute: typeof rootRouteImport }
     '/configuracoes-empresa': { id: '/configuracoes-empresa'; path: '/configuracoes-empresa'; fullPath: '/configuracoes-empresa'; preLoaderRoute: typeof ConfiguracoesEmpresaRouteImport; parentRoute: typeof rootRouteImport }
+    '/horarios': { id: '/horarios'; path: '/horarios'; fullPath: '/horarios'; preLoaderRoute: typeof HorariosRouteImport; parentRoute: typeof rootRouteImport }
     '/chat/$slug': { id: '/chat/$slug'; path: '/chat/$slug'; fullPath: '/chat/$slug'; preLoaderRoute: typeof ChatSlugRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
@@ -123,6 +129,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConversasRoute,
   ConfiguracaoIaRoute,
   ConfiguracoesEmpresaRoute,
+  HorariosRoute,
   ChatSlugRoute,
 }
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
