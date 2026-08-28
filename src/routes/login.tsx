@@ -23,16 +23,27 @@ function LoginPage() {
     setError("");
     setLoading(true);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInError) {
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+    if (signInError || !data.user) {
       setError("Não foi possível entrar. Confira seu e-mail e sua senha. Para o acesso de demonstração, use o botão ‘Entrar na demonstração’ abaixo.");
       setLoading(false);
       return;
     }
 
+    const { data: memberships } = await supabase.from("organization_members").select("organization_id").eq("user_id", data.user.id).limit(1);
+    if (!memberships?.length) {
+      const { error: bootstrapError } = await supabase.rpc("bootstrap_organization_from_metadata");
+      if (bootstrapError) {
+        setError("Seu login funcionou, mas não conseguimos preparar a empresa desta conta. Entre em contato com o suporte.");
+        setLoading(false);
+        return;
+      }
+    }
+
     await refreshMembership();
+    const { data: membership } = await supabase.from("organization_members").select("organization_id").eq("user_id", data.user.id).order("created_at").limit(1).maybeSingle();
     setLoading(false);
-    navigate({ to: "/dashboard" });
+    navigate({ to: membership?.organization_id ? "/dashboard" : "/onboarding" });
   }
 
   return (
@@ -59,11 +70,11 @@ function LoginPage() {
             <label className="block">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-semibold text-slate-700">Senha</span>
-                <button type="button" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700">Esqueci minha senha</button>
+                <Link to="/recuperar-senha" className="text-xs font-semibold text-emerald-600 hover:text-emerald-700">Esqueci minha senha</Link>
               </div>
               <div className="relative">
                 <LockKeyhole className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input required minLength={6} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Sua senha" className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-11 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10" />
+                <input required minLength={8} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Sua senha" className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-11 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10" />
                 <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700" aria-label="Mostrar ou ocultar senha">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
               </div>
             </label>
