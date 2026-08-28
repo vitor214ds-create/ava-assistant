@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bot, Eye, EyeOff, Loader2, LockKeyhole, Mail } from "lucide-react";
+import { Bot, Eye, EyeOff, Loader2, LockKeyhole, Mail, MonitorPlay } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,7 +25,7 @@ function LoginPage() {
 
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) {
-      setError("Não foi possível entrar. Confira seu e-mail e sua senha.");
+      setError("Não foi possível entrar. Confira seu e-mail e sua senha. Para o acesso de demonstração, use o botão ‘Entrar na demonstração’ abaixo.");
       setLoading(false);
       return;
     }
@@ -68,13 +68,18 @@ function LoginPage() {
               </div>
             </label>
 
-            {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+            {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">{error}</div>}
 
             <button disabled={loading} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-slate-950 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               Entrar
             </button>
           </form>
+
+          <div className="my-6 flex items-center gap-3"><span className="h-px flex-1 bg-slate-200"/><span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">ou</span><span className="h-px flex-1 bg-slate-200"/></div>
+
+          <Link to="/demo" className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100"><MonitorPlay className="h-4 w-4"/>Entrar na demonstração</Link>
+          <div className="mt-3 rounded-xl bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-500"><strong className="text-slate-700">Credenciais da demo:</strong><br/>demo@recepia.app<br/>RecepIA2026!</div>
 
           <p className="mt-7 text-center text-sm text-slate-500">Ainda não tem uma conta? <Link to="/cadastro" className="font-bold text-emerald-600 hover:text-emerald-700">Começar gratuitamente</Link></p>
         </div>
