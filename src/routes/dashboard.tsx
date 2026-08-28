@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bot, CalendarDays, CalendarCheck2, MessageCircleMore, UsersRound, Clock3, Sparkles, LogOut, Bell, ArrowUpRight } from "lucide-react";
+import { Bot, CalendarDays, CalendarCheck2, MessageCircleMore, UsersRound, Clock3, Sparkles, LogOut, Bell, ArrowUpRight, BriefcaseBusiness, UserRoundCog } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +10,8 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 type Stats = { appointmentsToday: number; clients: number; conversations: number; aiAppointments: number };
+
+type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -52,6 +54,8 @@ function DashboardPage() {
         <NavLink to="/dashboard" icon={CalendarDays} label="Painel" active />
         <NavLink to="/agenda" icon={CalendarCheck2} label="Agenda" />
         <NavLink to="/clientes" icon={UsersRound} label="Clientes" />
+        <NavLink to="/profissionais" icon={UserRoundCog} label="Profissionais" />
+        <NavLink to="/servicos" icon={BriefcaseBusiness} label="Serviços" />
         <div className="flex items-center gap-3 rounded-xl px-3 py-3 text-slate-400"><MessageCircleMore className="h-4 w-4" />Conversas</div>
         <div className="flex items-center gap-3 rounded-xl px-3 py-3 text-slate-400"><Sparkles className="h-4 w-4" />Configuração da IA</div>
       </nav>
@@ -72,6 +76,6 @@ function DashboardPage() {
   </main>;
 }
 
-function NavLink({ to, icon: Icon, label, active = false }: { to: "/dashboard" | "/agenda" | "/clientes"; icon: typeof CalendarDays; label: string; active?: boolean }) { return <Link to={to} className={`flex items-center gap-3 rounded-xl px-3 py-3 ${active ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}><Icon className="h-4 w-4" />{label}</Link>; }
+function NavLink({ to, icon: Icon, label, active = false }: { to: AppRoute; icon: typeof CalendarDays; label: string; active?: boolean }) { return <Link to={to} className={`flex items-center gap-3 rounded-xl px-3 py-3 ${active ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}><Icon className="h-4 w-4" />{label}</Link>; }
 function StatCard({ icon: Icon, label, value, helper, accent = false }: { icon: typeof CalendarDays; label: string; value: number; helper: string; accent?: boolean }) { return <article className={`rounded-3xl border p-5 ${accent ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-white"}`}><div className="flex items-center justify-between"><div className={`flex h-10 w-10 items-center justify-center rounded-xl ${accent ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-600"}`}><Icon className="h-4 w-4" /></div><Clock3 className="h-4 w-4 text-slate-300" /></div><p className="mt-5 text-sm font-medium text-slate-500">{label}</p><p className="mt-1 font-[Sora] text-3xl font-bold">{value}</p><p className="mt-2 text-xs text-slate-400">{helper}</p></article>; }
 function MiniStat({ label, value, accent = false }: { label: string; value: number; accent?: boolean }) { return <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-4"><p className="text-xs text-slate-400">{label}</p><p className={`mt-2 text-3xl font-bold ${accent ? "text-emerald-400" : ""}`}>{value}</p></div>; }
