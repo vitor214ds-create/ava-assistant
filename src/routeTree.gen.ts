@@ -21,6 +21,7 @@ import { Route as ConversasRouteImport } from './routes/conversas'
 import { Route as ConfiguracaoIaRouteImport } from './routes/configuracao-ia'
 import { Route as ConfiguracoesEmpresaRouteImport } from './routes/configuracoes-empresa'
 import { Route as HorariosRouteImport } from './routes/horarios'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ChatSlugRouteImport } from './routes/chat.$slug'
 
@@ -37,6 +38,7 @@ const ConversasRoute = ConversasRouteImport.update({ id: '/conversas', path: '/c
 const ConfiguracaoIaRoute = ConfiguracaoIaRouteImport.update({ id: '/configuracao-ia', path: '/configuracao-ia', getParentRoute: () => rootRouteImport } as any)
 const ConfiguracoesEmpresaRoute = ConfiguracoesEmpresaRouteImport.update({ id: '/configuracoes-empresa', path: '/configuracoes-empresa', getParentRoute: () => rootRouteImport } as any)
 const HorariosRoute = HorariosRouteImport.update({ id: '/horarios', path: '/horarios', getParentRoute: () => rootRouteImport } as any)
+const RelatoriosRoute = RelatoriosRouteImport.update({ id: '/relatorios', path: '/relatorios', getParentRoute: () => rootRouteImport } as any)
 const DemoRoute = DemoRouteImport.update({ id: '/demo', path: '/demo', getParentRoute: () => rootRouteImport } as any)
 const ChatSlugRoute = ChatSlugRouteImport.update({ id: '/chat/$slug', path: '/chat/$slug', getParentRoute: () => rootRouteImport } as any)
 
@@ -54,6 +56,7 @@ export interface FileRoutesByFullPath {
   '/configuracao-ia': typeof ConfiguracaoIaRoute
   '/configuracoes-empresa': typeof ConfiguracoesEmpresaRoute
   '/horarios': typeof HorariosRoute
+  '/relatorios': typeof RelatoriosRoute
   '/demo': typeof DemoRoute
   '/chat/$slug': typeof ChatSlugRoute
 }
@@ -73,12 +76,13 @@ export interface FileRoutesById {
   '/configuracao-ia': typeof ConfiguracaoIaRoute
   '/configuracoes-empresa': typeof ConfiguracoesEmpresaRoute
   '/horarios': typeof HorariosRoute
+  '/relatorios': typeof RelatoriosRoute
   '/demo': typeof DemoRoute
   '/chat/$slug': typeof ChatSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas' | '/configuracao-ia' | '/configuracoes-empresa' | '/horarios' | '/demo' | '/chat/$slug'
+  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas' | '/configuracao-ia' | '/configuracoes-empresa' | '/horarios' | '/relatorios' | '/demo' | '/chat/$slug'
   fileRoutesByTo: FileRoutesByTo
   to: FileRouteTypes['fullPaths']
   id: '__root__' | FileRouteTypes['fullPaths']
@@ -98,6 +102,7 @@ export interface RootRouteChildren {
   ConfiguracaoIaRoute: typeof ConfiguracaoIaRoute
   ConfiguracoesEmpresaRoute: typeof ConfiguracoesEmpresaRoute
   HorariosRoute: typeof HorariosRoute
+  RelatoriosRoute: typeof RelatoriosRoute
   DemoRoute: typeof DemoRoute
   ChatSlugRoute: typeof ChatSlugRoute
 }
@@ -117,6 +122,7 @@ declare module '@tanstack/react-router' {
     '/configuracao-ia': { id: '/configuracao-ia'; path: '/configuracao-ia'; fullPath: '/configuracao-ia'; preLoaderRoute: typeof ConfiguracaoIaRouteImport; parentRoute: typeof rootRouteImport }
     '/configuracoes-empresa': { id: '/configuracoes-empresa'; path: '/configuracoes-empresa'; fullPath: '/configuracoes-empresa'; preLoaderRoute: typeof ConfiguracoesEmpresaRouteImport; parentRoute: typeof rootRouteImport }
     '/horarios': { id: '/horarios'; path: '/horarios'; fullPath: '/horarios'; preLoaderRoute: typeof HorariosRouteImport; parentRoute: typeof rootRouteImport }
+    '/relatorios': { id: '/relatorios'; path: '/relatorios'; fullPath: '/relatorios'; preLoaderRoute: typeof RelatoriosRouteImport; parentRoute: typeof rootRouteImport }
     '/demo': { id: '/demo'; path: '/demo'; fullPath: '/demo'; preLoaderRoute: typeof DemoRouteImport; parentRoute: typeof rootRouteImport }
     '/chat/$slug': { id: '/chat/$slug'; path: '/chat/$slug'; fullPath: '/chat/$slug'; preLoaderRoute: typeof ChatSlugRouteImport; parentRoute: typeof rootRouteImport }
   }
@@ -136,6 +142,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracaoIaRoute,
   ConfiguracoesEmpresaRoute,
   HorariosRoute,
+  RelatoriosRoute,
   DemoRoute,
   ChatSlugRoute,
 }
