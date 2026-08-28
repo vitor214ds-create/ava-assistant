@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bot, Building2, Eye, EyeOff, Loader2, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
+import { Bot, Building2, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,6 +23,7 @@ function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [confirmationEmail, setConfirmationEmail] = useState("");
   const [form, setForm] = useState({ fullName: "", companyName: "", email: "", phone: "", password: "", segment: "outro" });
 
   const setField = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }));
@@ -32,10 +33,19 @@ function SignupPage() {
     setError("");
     setLoading(true);
 
+    const email = form.email.trim().toLowerCase();
     const { data, error: signupError } = await supabase.auth.signUp({
-      email: form.email,
+      email,
       password: form.password,
-      options: { data: { full_name: form.fullName, phone: form.phone } },
+      options: {
+        emailRedirectTo: `${window.location.origin}/login`,
+        data: {
+          full_name: form.fullName.trim(),
+          phone: form.phone.trim(),
+          company_name: form.companyName.trim(),
+          segment: form.segment,
+        },
+      },
     });
 
     if (signupError || !data.user) {
@@ -44,21 +54,15 @@ function SignupPage() {
       return;
     }
 
-    const { data: organization, error: organizationError } = await supabase
-      .from("organizations")
-      .insert({ name: form.companyName, segment: form.segment as "clinica" | "consultorio" | "barbearia" | "otica" | "outro", phone: form.phone, email: form.email })
-      .select("id")
-      .single();
-
-    if (organizationError || !organization) {
-      setError("Sua conta foi criada, mas não conseguimos configurar a empresa. Entre novamente para continuar.");
+    if (!data.session) {
+      setConfirmationEmail(email);
       setLoading(false);
       return;
     }
 
-    const { error: memberError } = await supabase.from("organization_members").insert({ organization_id: organization.id, user_id: data.user.id, role: "owner" });
-    if (memberError) {
-      setError("Sua empresa foi criada, mas houve um problema ao finalizar as permissões da conta.");
+    const { error: bootstrapError } = await supabase.rpc("bootstrap_organization_from_metadata");
+    if (bootstrapError) {
+      setError("Sua conta foi criada, mas não conseguimos configurar a empresa. Entre novamente para continuar.");
       setLoading(false);
       return;
     }
@@ -66,6 +70,8 @@ function SignupPage() {
     setLoading(false);
     navigate({ to: "/onboarding" });
   }
+
+  if (confirmationEmail) return <main className="min-h-screen bg-[#f8faf9] px-5 py-10 sm:px-8"><div className="mx-auto flex min-h-[80vh] max-w-lg items-center"><section className="w-full rounded-[28px] border border-slate-200 bg-white p-8 text-center shadow-xl shadow-slate-200/40"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600"><CheckCircle2 className="h-7 w-7"/></span><h1 className="mt-6 font-[Sora] text-3xl font-bold">Confirme seu e-mail.</h1><p className="mt-3 text-sm leading-6 text-slate-600">Enviamos um link de confirmação para <strong>{confirmationEmail}</strong>. Depois de confirmar, volte à RecepIA e entre normalmente. Sua empresa será configurada automaticamente.</p><Link to="/login" className="mt-7 inline-flex h-11 items-center justify-center rounded-xl bg-slate-950 px-5 text-sm font-bold text-white">Ir para o login</Link></section></div></main>;
 
   return (
     <main className="min-h-screen bg-[#f8faf9] px-5 py-10 sm:px-8">
@@ -90,7 +96,7 @@ function SignupPage() {
 
             <label className="block sm:col-span-2"><span className="mb-2 block text-sm font-semibold text-slate-700">Segmento</span><select value={form.segment} onChange={(e) => setField("segment", e.target.value)} className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10">{segments.map((segment) => <option key={segment.value} value={segment.value}>{segment.label}</option>)}</select></label>
 
-            <label className="block sm:col-span-2"><span className="mb-2 block text-sm font-semibold text-slate-700">Senha</span><div className="relative"><LockKeyhole className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input required minLength={6} type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => setField("password", e.target.value)} placeholder="Mínimo de 6 caracteres" className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-11 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10" /><button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div></label>
+            <label className="block sm:col-span-2"><span className="mb-2 block text-sm font-semibold text-slate-700">Senha</span><div className="relative"><LockKeyhole className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input required minLength={8} type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => setField("password", e.target.value)} placeholder="Mínimo de 8 caracteres" className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-11 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10" /><button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div></label>
 
             {error && <div className="sm:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
 
