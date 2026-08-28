@@ -10,7 +10,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 type Stats = { appointmentsToday: number; clients: number; conversations: number; aiAppointments: number };
-type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos" | "/conversas" | "/configuracao-ia" | "/configuracoes-empresa";
+type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos" | "/conversas" | "/configuracao-ia" | "/configuracoes-empresa" | "/horarios";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -55,6 +55,7 @@ function DashboardPage() {
         <NavLink to="/clientes" icon={UsersRound} label="Clientes" />
         <NavLink to="/profissionais" icon={UserRoundCog} label="Profissionais" />
         <NavLink to="/servicos" icon={BriefcaseBusiness} label="Serviços" />
+        <NavLink to="/horarios" icon={Clock3} label="Horários" />
         <NavLink to="/conversas" icon={MessageCircleMore} label="Conversas" />
         <NavLink to="/configuracao-ia" icon={Sparkles} label="Configuração da IA" />
         <NavLink to="/configuracoes-empresa" icon={Building2} label="Empresa e instalação" />
