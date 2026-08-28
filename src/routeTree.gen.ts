@@ -15,6 +15,8 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as ClientesRouteImport } from './routes/clientes'
+import { Route as ProfissionaisRouteImport } from './routes/profissionais'
+import { Route as ServicosRouteImport } from './routes/servicos'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
 const LoginRoute = LoginRouteImport.update({ id: '/login', path: '/login', getParentRoute: () => rootRouteImport } as any)
@@ -23,6 +25,8 @@ const OnboardingRoute = OnboardingRouteImport.update({ id: '/onboarding', path: 
 const DashboardRoute = DashboardRouteImport.update({ id: '/dashboard', path: '/dashboard', getParentRoute: () => rootRouteImport } as any)
 const AgendaRoute = AgendaRouteImport.update({ id: '/agenda', path: '/agenda', getParentRoute: () => rootRouteImport } as any)
 const ClientesRoute = ClientesRouteImport.update({ id: '/clientes', path: '/clientes', getParentRoute: () => rootRouteImport } as any)
+const ProfissionaisRoute = ProfissionaisRouteImport.update({ id: '/profissionais', path: '/profissionais', getParentRoute: () => rootRouteImport } as any)
+const ServicosRoute = ServicosRouteImport.update({ id: '/servicos', path: '/servicos', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -32,6 +36,8 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/agenda': typeof AgendaRoute
   '/clientes': typeof ClientesRoute
+  '/profissionais': typeof ProfissionaisRoute
+  '/servicos': typeof ServicosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -41,6 +47,8 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/agenda': typeof AgendaRoute
   '/clientes': typeof ClientesRoute
+  '/profissionais': typeof ProfissionaisRoute
+  '/servicos': typeof ServicosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -51,13 +59,15 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/agenda': typeof AgendaRoute
   '/clientes': typeof ClientesRoute
+  '/profissionais': typeof ProfissionaisRoute
+  '/servicos': typeof ServicosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes'
+  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes'
-  id: '__root__' | '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes'
+  to: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos'
+  id: '__root__' | '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -68,6 +78,8 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   AgendaRoute: typeof AgendaRoute
   ClientesRoute: typeof ClientesRoute
+  ProfissionaisRoute: typeof ProfissionaisRoute
+  ServicosRoute: typeof ServicosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -79,6 +91,8 @@ declare module '@tanstack/react-router' {
     '/dashboard': { id: '/dashboard'; path: '/dashboard'; fullPath: '/dashboard'; preLoaderRoute: typeof DashboardRouteImport; parentRoute: typeof rootRouteImport }
     '/agenda': { id: '/agenda'; path: '/agenda'; fullPath: '/agenda'; preLoaderRoute: typeof AgendaRouteImport; parentRoute: typeof rootRouteImport }
     '/clientes': { id: '/clientes'; path: '/clientes'; fullPath: '/clientes'; preLoaderRoute: typeof ClientesRouteImport; parentRoute: typeof rootRouteImport }
+    '/profissionais': { id: '/profissionais'; path: '/profissionais'; fullPath: '/profissionais'; preLoaderRoute: typeof ProfissionaisRouteImport; parentRoute: typeof rootRouteImport }
+    '/servicos': { id: '/servicos'; path: '/servicos'; fullPath: '/servicos'; preLoaderRoute: typeof ServicosRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
@@ -90,6 +104,8 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute,
   AgendaRoute,
   ClientesRoute,
+  ProfissionaisRoute,
+  ServicosRoute,
 }
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
 
