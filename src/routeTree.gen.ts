@@ -19,6 +19,7 @@ import { Route as ProfissionaisRouteImport } from './routes/profissionais'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as ConversasRouteImport } from './routes/conversas'
 import { Route as ConfiguracaoIaRouteImport } from './routes/configuracao-ia'
+import { Route as ChatSlugRouteImport } from './routes/chat.$slug'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
 const LoginRoute = LoginRouteImport.update({ id: '/login', path: '/login', getParentRoute: () => rootRouteImport } as any)
@@ -31,6 +32,7 @@ const ProfissionaisRoute = ProfissionaisRouteImport.update({ id: '/profissionais
 const ServicosRoute = ServicosRouteImport.update({ id: '/servicos', path: '/servicos', getParentRoute: () => rootRouteImport } as any)
 const ConversasRoute = ConversasRouteImport.update({ id: '/conversas', path: '/conversas', getParentRoute: () => rootRouteImport } as any)
 const ConfiguracaoIaRoute = ConfiguracaoIaRouteImport.update({ id: '/configuracao-ia', path: '/configuracao-ia', getParentRoute: () => rootRouteImport } as any)
+const ChatSlugRoute = ChatSlugRouteImport.update({ id: '/chat/$slug', path: '/chat/$slug', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -44,6 +46,7 @@ export interface FileRoutesByFullPath {
   '/servicos': typeof ServicosRoute
   '/conversas': typeof ConversasRoute
   '/configuracao-ia': typeof ConfiguracaoIaRoute
+  '/chat/$slug': typeof ChatSlugRoute
 }
 export interface FileRoutesByTo extends FileRoutesByFullPath {}
 export interface FileRoutesById {
@@ -59,10 +62,11 @@ export interface FileRoutesById {
   '/servicos': typeof ServicosRoute
   '/conversas': typeof ConversasRoute
   '/configuracao-ia': typeof ConfiguracaoIaRoute
+  '/chat/$slug': typeof ChatSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas' | '/configuracao-ia'
+  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas' | '/configuracao-ia' | '/chat/$slug'
   fileRoutesByTo: FileRoutesByTo
   to: FileRouteTypes['fullPaths']
   id: '__root__' | FileRouteTypes['fullPaths']
@@ -80,6 +84,7 @@ export interface RootRouteChildren {
   ServicosRoute: typeof ServicosRoute
   ConversasRoute: typeof ConversasRoute
   ConfiguracaoIaRoute: typeof ConfiguracaoIaRoute
+  ChatSlugRoute: typeof ChatSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -95,6 +100,7 @@ declare module '@tanstack/react-router' {
     '/servicos': { id: '/servicos'; path: '/servicos'; fullPath: '/servicos'; preLoaderRoute: typeof ServicosRouteImport; parentRoute: typeof rootRouteImport }
     '/conversas': { id: '/conversas'; path: '/conversas'; fullPath: '/conversas'; preLoaderRoute: typeof ConversasRouteImport; parentRoute: typeof rootRouteImport }
     '/configuracao-ia': { id: '/configuracao-ia'; path: '/configuracao-ia'; fullPath: '/configuracao-ia'; preLoaderRoute: typeof ConfiguracaoIaRouteImport; parentRoute: typeof rootRouteImport }
+    '/chat/$slug': { id: '/chat/$slug'; path: '/chat/$slug'; fullPath: '/chat/$slug'; preLoaderRoute: typeof ChatSlugRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
@@ -110,6 +116,7 @@ const rootRouteChildren: RootRouteChildren = {
   ServicosRoute,
   ConversasRoute,
   ConfiguracaoIaRoute,
+  ChatSlugRoute,
 }
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
 
