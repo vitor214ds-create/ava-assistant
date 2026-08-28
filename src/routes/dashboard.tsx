@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bot, CalendarDays, CalendarCheck2, MessageCircleMore, UsersRound, Clock3, Sparkles, LogOut, Bell, ArrowUpRight, BriefcaseBusiness, UserRoundCog, Building2, BarChart3, Crown, PlugZap } from "lucide-react";
+import { Bot, CalendarDays, CalendarCheck2, MessageCircleMore, UsersRound, Clock3, Sparkles, LogOut, Bell, ArrowUpRight, BriefcaseBusiness, UserRoundCog, Building2, BarChart3, Crown, PlugZap, CircleHelp, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 type Stats = { appointmentsToday: number; clients: number; conversations: number; aiAppointments: number };
-type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos" | "/conversas" | "/configuracao-ia" | "/configuracoes-empresa" | "/horarios" | "/relatorios" | "/assinatura" | "/integracoes";
+type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos" | "/conversas" | "/configuracao-ia" | "/configuracoes-empresa" | "/horarios" | "/relatorios" | "/assinatura" | "/integracoes" | "/ajuda" | "/admin";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ function DashboardPage() {
   const [companyName, setCompanyName] = useState("Sua empresa");
   const [stats, setStats] = useState<Stats>({ appointmentsToday: 0, clients: 0, conversations: 0, aiAppointments: 0 });
   const [recent, setRecent] = useState<any[]>([]);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -34,13 +35,15 @@ function DashboardPage() {
       supabase.from("conversations").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).gte("created_at", start.toISOString()),
       supabase.from("appointments").select("id", { count: "exact", head: true }).eq("organization_id", organizationId).eq("created_by_ai", true).gte("created_at", start.toISOString()),
       supabase.from("appointments").select("id,starts_at,status,clients(name),services(name)").eq("organization_id", organizationId).order("created_at", { ascending: false }).limit(5),
-    ]).then(([org, appointments, clients, conversations, aiAppointments, recentAppointments]) => {
+      supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "platform_admin").maybeSingle(),
+    ]).then(([org, appointments, clients, conversations, aiAppointments, recentAppointments, platformRole]) => {
       if (org.data) {
         setCompanyName(org.data.name);
         if (!org.data.onboarding_completed) return void navigate({ to: "/onboarding" });
       }
       setStats({ appointmentsToday: appointments.count ?? 0, clients: clients.count ?? 0, conversations: conversations.count ?? 0, aiAppointments: aiAppointments.count ?? 0 });
       setRecent(recentAppointments.data ?? []);
+      setIsPlatformAdmin(Boolean(platformRole.data));
     });
   }, [loading, user, organizationId]);
 
@@ -49,7 +52,7 @@ function DashboardPage() {
   return <main className="min-h-screen bg-[#f7f9f8] text-slate-900">
     <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-slate-200 bg-white lg:block">
       <div className="flex h-18 items-center gap-2.5 border-b border-slate-100 px-6"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-white"><Bot className="h-5 w-5" /></span><span className="font-[Sora] text-xl font-bold">Recep<span className="text-emerald-500">IA</span></span></div>
-      <nav className="space-y-1 p-4 text-sm font-semibold">
+      <nav className="space-y-1 overflow-y-auto p-4 pb-24 text-sm font-semibold" style={{maxHeight:"calc(100vh - 72px)"}}>
         <NavLink to="/dashboard" icon={CalendarDays} label="Painel" active />
         <NavLink to="/agenda" icon={CalendarCheck2} label="Agenda" />
         <NavLink to="/clientes" icon={UsersRound} label="Clientes" />
@@ -62,8 +65,10 @@ function DashboardPage() {
         <NavLink to="/integracoes" icon={PlugZap} label="Integrações" />
         <NavLink to="/configuracao-ia" icon={Sparkles} label="Configuração da IA" />
         <NavLink to="/configuracoes-empresa" icon={Building2} label="Empresa e instalação" />
+        <NavLink to="/ajuda" icon={CircleHelp} label="Central de Ajuda" />
+        {isPlatformAdmin && <><div className="my-3 h-px bg-slate-100"/><NavLink to="/admin" icon={ShieldCheck} label="Administração" /></>}
       </nav>
-      <button onClick={handleSignOut} className="absolute bottom-5 left-4 right-4 flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900"><LogOut className="h-4 w-4" />Sair</button>
+      <button onClick={handleSignOut} className="absolute bottom-5 left-4 right-4 flex items-center gap-3 rounded-xl bg-white px-3 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-900"><LogOut className="h-4 w-4" />Sair</button>
     </aside>
 
     <div className="lg:pl-64">
