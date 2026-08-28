@@ -103,7 +103,7 @@ function SignupPage() {
             <button disabled={loading} className="sm:col-span-2 flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-60">{loading && <Loader2 className="h-4 w-4 animate-spin" />}Criar minha conta</button>
           </form>
 
-          <p className="mt-5 text-center text-xs leading-5 text-slate-400">Ao continuar, você concorda com os Termos de Uso e com a Política de Privacidade da RecepIA.</p>
+          <p className="mt-5 text-center text-xs leading-5 text-slate-400">Ao continuar, você concorda com os <Link to="/termos" className="font-semibold text-slate-600 underline underline-offset-2 hover:text-slate-900">Termos de Uso</Link> e com a <Link to="/privacidade" className="font-semibold text-slate-600 underline underline-offset-2 hover:text-slate-900">Política de Privacidade</Link> da RecepIA.</p>
         </section>
       </div>
     </main>
