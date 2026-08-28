@@ -13,32 +13,14 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AgendaRouteImport } from './routes/agenda'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CadastroRoute = CadastroRouteImport.update({
-  id: '/cadastro',
-  path: '/cadastro',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
+const LoginRoute = LoginRouteImport.update({ id: '/login', path: '/login', getParentRoute: () => rootRouteImport } as any)
+const CadastroRoute = CadastroRouteImport.update({ id: '/cadastro', path: '/cadastro', getParentRoute: () => rootRouteImport } as any)
+const OnboardingRoute = OnboardingRouteImport.update({ id: '/onboarding', path: '/onboarding', getParentRoute: () => rootRouteImport } as any)
+const DashboardRoute = DashboardRouteImport.update({ id: '/dashboard', path: '/dashboard', getParentRoute: () => rootRouteImport } as any)
+const AgendaRoute = AgendaRouteImport.update({ id: '/agenda', path: '/agenda', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -46,6 +28,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof DashboardRoute
+  '/agenda': typeof AgendaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -53,6 +36,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof DashboardRoute
+  '/agenda': typeof AgendaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,13 +45,14 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof DashboardRoute
+  '/agenda': typeof AgendaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard'
+  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard'
-  id: '__root__' | '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard'
+  to: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda'
+  id: '__root__' | '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,58 +61,29 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   OnboardingRoute: typeof OnboardingRoute
   DashboardRoute: typeof DashboardRoute
+  AgendaRoute: typeof AgendaRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cadastro': {
-      id: '/cadastro'
-      path: '/cadastro'
-      fullPath: '/cadastro'
-      preLoaderRoute: typeof CadastroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    '/': { id: '/'; path: '/'; fullPath: '/'; preLoaderRoute: typeof IndexRouteImport; parentRoute: typeof rootRouteImport }
+    '/login': { id: '/login'; path: '/login'; fullPath: '/login'; preLoaderRoute: typeof LoginRouteImport; parentRoute: typeof rootRouteImport }
+    '/cadastro': { id: '/cadastro'; path: '/cadastro'; fullPath: '/cadastro'; preLoaderRoute: typeof CadastroRouteImport; parentRoute: typeof rootRouteImport }
+    '/onboarding': { id: '/onboarding'; path: '/onboarding'; fullPath: '/onboarding'; preLoaderRoute: typeof OnboardingRouteImport; parentRoute: typeof rootRouteImport }
+    '/dashboard': { id: '/dashboard'; path: '/dashboard'; fullPath: '/dashboard'; preLoaderRoute: typeof DashboardRouteImport; parentRoute: typeof rootRouteImport }
+    '/agenda': { id: '/agenda'; path: '/agenda'; fullPath: '/agenda'; preLoaderRoute: typeof AgendaRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  LoginRoute: LoginRoute,
-  CadastroRoute: CadastroRoute,
-  OnboardingRoute: OnboardingRoute,
-  DashboardRoute: DashboardRoute,
+  IndexRoute,
+  LoginRoute,
+  CadastroRoute,
+  OnboardingRoute,
+  DashboardRoute,
+  AgendaRoute,
 }
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
 import type { startInstance } from './start.ts'
