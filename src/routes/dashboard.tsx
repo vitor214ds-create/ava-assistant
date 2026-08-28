@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Bot, CalendarDays, CalendarCheck2, MessageCircleMore, UsersRound, Clock3, Sparkles, LogOut, Bell, ArrowUpRight, BriefcaseBusiness, UserRoundCog, Building2 } from "lucide-react";
+import { Bot, CalendarDays, CalendarCheck2, MessageCircleMore, UsersRound, Clock3, Sparkles, LogOut, Bell, ArrowUpRight, BriefcaseBusiness, UserRoundCog, Building2, BarChart3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 type Stats = { appointmentsToday: number; clients: number; conversations: number; aiAppointments: number };
-type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos" | "/conversas" | "/configuracao-ia" | "/configuracoes-empresa" | "/horarios";
+type AppRoute = "/dashboard" | "/agenda" | "/clientes" | "/profissionais" | "/servicos" | "/conversas" | "/configuracao-ia" | "/configuracoes-empresa" | "/horarios" | "/relatorios";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -57,6 +57,7 @@ function DashboardPage() {
         <NavLink to="/servicos" icon={BriefcaseBusiness} label="Serviços" />
         <NavLink to="/horarios" icon={Clock3} label="Horários" />
         <NavLink to="/conversas" icon={MessageCircleMore} label="Conversas" />
+        <NavLink to="/relatorios" icon={BarChart3} label="Relatórios" />
         <NavLink to="/configuracao-ia" icon={Sparkles} label="Configuração da IA" />
         <NavLink to="/configuracoes-empresa" icon={Building2} label="Empresa e instalação" />
       </nav>
