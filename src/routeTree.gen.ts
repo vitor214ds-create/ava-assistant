@@ -11,6 +11,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as RecuperarSenhaRouteImport } from './routes/recuperar-senha'
+import { Route as NovaSenhaRouteImport } from './routes/nova-senha'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AgendaRouteImport } from './routes/agenda'
@@ -29,6 +31,8 @@ import { Route as ChatSlugRouteImport } from './routes/chat.$slug'
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
 const LoginRoute = LoginRouteImport.update({ id: '/login', path: '/login', getParentRoute: () => rootRouteImport } as any)
 const CadastroRoute = CadastroRouteImport.update({ id: '/cadastro', path: '/cadastro', getParentRoute: () => rootRouteImport } as any)
+const RecuperarSenhaRoute = RecuperarSenhaRouteImport.update({ id: '/recuperar-senha', path: '/recuperar-senha', getParentRoute: () => rootRouteImport } as any)
+const NovaSenhaRoute = NovaSenhaRouteImport.update({ id: '/nova-senha', path: '/nova-senha', getParentRoute: () => rootRouteImport } as any)
 const OnboardingRoute = OnboardingRouteImport.update({ id: '/onboarding', path: '/onboarding', getParentRoute: () => rootRouteImport } as any)
 const DashboardRoute = DashboardRouteImport.update({ id: '/dashboard', path: '/dashboard', getParentRoute: () => rootRouteImport } as any)
 const AgendaRoute = AgendaRouteImport.update({ id: '/agenda', path: '/agenda', getParentRoute: () => rootRouteImport } as any)
@@ -48,6 +52,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/cadastro': typeof CadastroRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/nova-senha': typeof NovaSenhaRoute
   '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof DashboardRoute
   '/agenda': typeof AgendaRoute
@@ -69,6 +75,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/cadastro': typeof CadastroRoute
+  '/recuperar-senha': typeof RecuperarSenhaRoute
+  '/nova-senha': typeof NovaSenhaRoute
   '/onboarding': typeof OnboardingRoute
   '/dashboard': typeof DashboardRoute
   '/agenda': typeof AgendaRoute
@@ -86,7 +94,7 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas' | '/configuracao-ia' | '/configuracoes-empresa' | '/horarios' | '/relatorios' | '/assinatura' | '/demo' | '/chat/$slug'
+  fullPaths: '/' | '/login' | '/cadastro' | '/recuperar-senha' | '/nova-senha' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas' | '/configuracao-ia' | '/configuracoes-empresa' | '/horarios' | '/relatorios' | '/assinatura' | '/demo' | '/chat/$slug'
   fileRoutesByTo: FileRoutesByTo
   to: FileRouteTypes['fullPaths']
   id: '__root__' | FileRouteTypes['fullPaths']
@@ -96,6 +104,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   CadastroRoute: typeof CadastroRoute
+  RecuperarSenhaRoute: typeof RecuperarSenhaRoute
+  NovaSenhaRoute: typeof NovaSenhaRoute
   OnboardingRoute: typeof OnboardingRoute
   DashboardRoute: typeof DashboardRoute
   AgendaRoute: typeof AgendaRoute
@@ -117,6 +127,8 @@ declare module '@tanstack/react-router' {
     '/': { id: '/'; path: '/'; fullPath: '/'; preLoaderRoute: typeof IndexRouteImport; parentRoute: typeof rootRouteImport }
     '/login': { id: '/login'; path: '/login'; fullPath: '/login'; preLoaderRoute: typeof LoginRouteImport; parentRoute: typeof rootRouteImport }
     '/cadastro': { id: '/cadastro'; path: '/cadastro'; fullPath: '/cadastro'; preLoaderRoute: typeof CadastroRouteImport; parentRoute: typeof rootRouteImport }
+    '/recuperar-senha': { id: '/recuperar-senha'; path: '/recuperar-senha'; fullPath: '/recuperar-senha'; preLoaderRoute: typeof RecuperarSenhaRouteImport; parentRoute: typeof rootRouteImport }
+    '/nova-senha': { id: '/nova-senha'; path: '/nova-senha'; fullPath: '/nova-senha'; preLoaderRoute: typeof NovaSenhaRouteImport; parentRoute: typeof rootRouteImport }
     '/onboarding': { id: '/onboarding'; path: '/onboarding'; fullPath: '/onboarding'; preLoaderRoute: typeof OnboardingRouteImport; parentRoute: typeof rootRouteImport }
     '/dashboard': { id: '/dashboard'; path: '/dashboard'; fullPath: '/dashboard'; preLoaderRoute: typeof DashboardRouteImport; parentRoute: typeof rootRouteImport }
     '/agenda': { id: '/agenda'; path: '/agenda'; fullPath: '/agenda'; preLoaderRoute: typeof AgendaRouteImport; parentRoute: typeof rootRouteImport }
@@ -138,6 +150,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute,
   LoginRoute,
   CadastroRoute,
+  RecuperarSenhaRoute,
+  NovaSenhaRoute,
   OnboardingRoute,
   DashboardRoute,
   AgendaRoute,
