@@ -11,220 +11,60 @@ type Service = { id: string; name: string; description: string | null; price_cen
 type Professional = { id: string; name: string; role_title: string | null };
 type BusinessHour = { weekday: number; is_open: boolean; opens_at: string; closes_at: string; break_start: string | null; break_end: string | null };
 type FunctionCall = { type: "function_call"; call_id: string; name: string; arguments: string };
+type Context = { db: ReturnType<typeof createClient>; organizationId: string; conversationId: string; clientId: string | null; contactName: string | null; contactPhone: string | null; timezone: string; services: Service[]; professionals: Professional[]; hours: BusinessHour[] };
 
-type Context = {
-  db: ReturnType<typeof createClient>;
-  organizationId: string;
-  conversationId: string;
-  clientId: string | null;
-  contactName: string | null;
-  contactPhone: string | null;
-  timezone: string;
-  services: Service[];
-  professionals: Professional[];
-  hours: BusinessHour[];
-};
-
-async function getClientId(ctx: Context) {
-  if (ctx.clientId) return ctx.clientId;
-  if (!ctx.contactPhone) return null;
-  const { data } = await ctx.db.from("clients").select("id").eq("organization_id", ctx.organizationId).eq("phone", ctx.contactPhone).maybeSingle();
-  return data?.id ?? null;
-}
+async function getClientId(ctx: Context) { if (ctx.clientId) return ctx.clientId; if (!ctx.contactPhone) return null; const { data } = await ctx.db.from("clients").select("id").eq("organization_id", ctx.organizationId).eq("phone", ctx.contactPhone).maybeSingle(); return data?.id ?? null; }
 
 async function slots(ctx: Context, args: { service_id: string; professional_id: string | null; date: string; exclude_appointment_id?: string | null }) {
-  const service = ctx.services.find((s) => s.id === args.service_id);
-  if (!service) return { ok: false, error: "Serviço inválido" };
-  const day = weekday(args.date, ctx.timezone);
-  const orgHours = ctx.hours.find((h) => h.weekday === day);
-  if (!orgHours?.is_open) return { ok: true, slots: [] };
-  let pros = ctx.professionals;
-  if (service.professional_id) pros = pros.filter((p) => p.id === service.professional_id);
-  if (args.professional_id) pros = pros.filter((p) => p.id === args.professional_id);
-  const startDay = fromZonedTime(`${args.date}T00:00:00`, ctx.timezone);
-  const endDay = fromZonedTime(`${args.date}T23:59:59`, ctx.timezone);
-  const { data: booked } = await ctx.db.from("appointments").select("id,professional_id,starts_at,ends_at").eq("organization_id", ctx.organizationId).neq("status", "cancelado").gte("starts_at", startDay.toISOString()).lte("starts_at", endDay.toISOString());
-  const result: Array<{ professional_id: string; professional_name: string; date: string; time: string }> = [];
-  for (const pro of pros) {
-    const { data: ownHours } = await ctx.db.from("professional_hours").select("is_open,opens_at,closes_at").eq("organization_id", ctx.organizationId).eq("professional_id", pro.id).eq("weekday", day).maybeSingle();
-    if (ownHours && !ownHours.is_open) continue;
-    const open = Math.max(mins(ownHours?.opens_at ?? orgHours.opens_at), mins(orgHours.opens_at));
-    const close = Math.min(mins(ownHours?.closes_at ?? orgHours.closes_at), mins(orgHours.closes_at));
-    const breakStart = orgHours.break_start ? mins(orgHours.break_start) : null;
-    const breakEnd = orgHours.break_end ? mins(orgHours.break_end) : null;
-    for (let cursor = open; cursor + service.duration_minutes <= close; cursor += 30) {
-      if (breakStart !== null && breakEnd !== null && cursor < breakEnd && cursor + service.duration_minutes > breakStart) continue;
-      const time = `${String(Math.floor(cursor / 60)).padStart(2, "0")}:${String(cursor % 60).padStart(2, "0")}`;
-      const start = fromZonedTime(`${args.date}T${time}:00`, ctx.timezone);
-      const end = new Date(start.getTime() + service.duration_minutes * 60000);
-      if (start <= new Date()) continue;
-      const busy = (booked ?? []).some((a) => a.id !== args.exclude_appointment_id && a.professional_id === pro.id && start < new Date(a.ends_at) && end > new Date(a.starts_at));
-      if (!busy) result.push({ professional_id: pro.id, professional_name: pro.name, date: args.date, time });
-      if (result.length >= 5) return { ok: true, slots: result };
-    }
-  }
-  return { ok: true, slots: result };
+  const service = ctx.services.find((s) => s.id === args.service_id); if (!service) return { ok:false,error:"Serviço inválido" };
+  const day=weekday(args.date,ctx.timezone); const orgHours=ctx.hours.find((h)=>h.weekday===day); if(!orgHours?.is_open)return{ok:true,slots:[]};
+  let pros=ctx.professionals; if(service.professional_id)pros=pros.filter((p)=>p.id===service.professional_id); if(args.professional_id)pros=pros.filter((p)=>p.id===args.professional_id);
+  const startDay=fromZonedTime(`${args.date}T00:00:00`,ctx.timezone), endDay=fromZonedTime(`${args.date}T23:59:59`,ctx.timezone);
+  const {data:booked}=await ctx.db.from("appointments").select("id,professional_id,starts_at,ends_at").eq("organization_id",ctx.organizationId).neq("status","cancelado").gte("starts_at",startDay.toISOString()).lte("starts_at",endDay.toISOString());
+  const result:Array<{professional_id:string;professional_name:string;date:string;time:string}>=[];
+  for(const pro of pros){const{data:ownHours}=await ctx.db.from("professional_hours").select("is_open,opens_at,closes_at").eq("organization_id",ctx.organizationId).eq("professional_id",pro.id).eq("weekday",day).maybeSingle(); if(ownHours&&!ownHours.is_open)continue;
+    const open=Math.max(mins(ownHours?.opens_at??orgHours.opens_at),mins(orgHours.opens_at)),close=Math.min(mins(ownHours?.closes_at??orgHours.closes_at),mins(orgHours.closes_at));
+    const breakStart=orgHours.break_start?mins(orgHours.break_start):null,breakEnd=orgHours.break_end?mins(orgHours.break_end):null;
+    for(let cursor=open;cursor+service.duration_minutes<=close;cursor+=30){if(breakStart!==null&&breakEnd!==null&&cursor<breakEnd&&cursor+service.duration_minutes>breakStart)continue;
+      const time=`${String(Math.floor(cursor/60)).padStart(2,"0")}:${String(cursor%60).padStart(2,"0")}`; const start=fromZonedTime(`${args.date}T${time}:00`,ctx.timezone),end=new Date(start.getTime()+service.duration_minutes*60000); if(start<=new Date())continue;
+      const busy=(booked??[]).some((a)=>a.id!==args.exclude_appointment_id&&a.professional_id===pro.id&&start<new Date(a.ends_at)&&end>new Date(a.starts_at)); if(!busy)result.push({professional_id:pro.id,professional_name:pro.name,date:args.date,time}); if(result.length>=5)return{ok:true,slots:result}; }}
+  return{ok:true,slots:result};
 }
 
-async function createAppointment(ctx: Context, args: { service_id: string; professional_id: string; date: string; time: string; client_name: string; client_phone: string }) {
-  const service = ctx.services.find((s) => s.id === args.service_id);
-  const pro = ctx.professionals.find((p) => p.id === args.professional_id);
-  if (!service || !pro) return { ok: false, error: "Serviço ou profissional inválido" };
-  const available = await slots(ctx, { service_id: service.id, professional_id: pro.id, date: args.date });
-  if (!available.ok || !available.slots.some((s) => s.time === args.time && s.professional_id === pro.id)) return { ok: false, error: "Horário indisponível" };
-  let clientId = await getClientId(ctx);
-  const phone = (args.client_phone || ctx.contactPhone || "").trim();
-  const name = (args.client_name || ctx.contactName || "Cliente").trim();
-  if (!clientId && phone) {
-    const { data } = await ctx.db.from("clients").select("id").eq("organization_id", ctx.organizationId).eq("phone", phone).maybeSingle();
-    clientId = data?.id ?? null;
-  }
-  if (!clientId) {
-    const { data, error } = await ctx.db.from("clients").insert({ organization_id: ctx.organizationId, name, phone: phone || null, status: "novo" }).select("id").single();
-    if (error || !data) return { ok: false, error: "Não foi possível cadastrar o cliente" };
-    clientId = data.id;
-  }
-  await ctx.db.from("conversations").update({ client_id: clientId, contact_name: name, contact_phone: phone || null }).eq("id", ctx.conversationId);
-  const start = fromZonedTime(`${args.date}T${args.time}:00`, ctx.timezone);
-  const end = new Date(start.getTime() + service.duration_minutes * 60000);
-  const { data, error } = await ctx.db.from("appointments").insert({ organization_id: ctx.organizationId, client_id: clientId, service_id: service.id, professional_id: pro.id, starts_at: start.toISOString(), ends_at: end.toISOString(), status: "agendado", created_by_ai: true }).select("id,status,starts_at").single();
-  if (error || !data) return { ok: false, error: "Não foi possível concluir. O horário pode ter sido ocupado." };
-  return { ok: true, appointment: { ...data, service: service.name, professional: pro.name, date: args.date, time: args.time } };
+async function createAppointment(ctx: Context,args:{service_id:string;professional_id:string;date:string;time:string;client_name:string;client_phone:string}){
+  const service=ctx.services.find(s=>s.id===args.service_id),pro=ctx.professionals.find(p=>p.id===args.professional_id);if(!service||!pro)return{ok:false,error:"Serviço ou profissional inválido"};
+  const available=await slots(ctx,{service_id:service.id,professional_id:pro.id,date:args.date});if(!available.ok||!available.slots.some((s:any)=>s.time===args.time&&s.professional_id===pro.id))return{ok:false,error:"Horário indisponível"};
+  let clientId=await getClientId(ctx);const phone=(args.client_phone||ctx.contactPhone||"").trim(),name=(args.client_name||ctx.contactName||"Cliente").trim();
+  if(!clientId&&phone){const{data}=await ctx.db.from("clients").select("id").eq("organization_id",ctx.organizationId).eq("phone",phone).maybeSingle();clientId=data?.id??null}
+  if(!clientId){const{data,error}=await ctx.db.from("clients").insert({organization_id:ctx.organizationId,name,phone:phone||null,status:"novo"}).select("id").single();if(error||!data)return{ok:false,error:"Não foi possível cadastrar o cliente"};clientId=data.id}
+  await ctx.db.from("conversations").update({client_id:clientId,contact_name:name,contact_phone:phone||null}).eq("id",ctx.conversationId);
+  const start=fromZonedTime(`${args.date}T${args.time}:00`,ctx.timezone),end=new Date(start.getTime()+service.duration_minutes*60000);
+  const{data,error}=await ctx.db.from("appointments").insert({organization_id:ctx.organizationId,client_id:clientId,service_id:service.id,professional_id:pro.id,starts_at:start.toISOString(),ends_at:end.toISOString(),status:"agendado",created_by_ai:true}).select("id,status,starts_at").single();
+  if(error||!data)return{ok:false,error:"Não foi possível concluir. O horário pode ter sido ocupado."};return{ok:true,appointment:{...data,service:service.name,professional:pro.name,date:args.date,time:args.time}}
 }
 
-async function listAppointments(ctx: Context) {
-  const clientId = await getClientId(ctx);
-  if (!clientId) return { ok: true, appointments: [] };
-  const { data } = await ctx.db.from("appointments").select("id,starts_at,status,service_id,professional_id,services(name),professionals(name)").eq("organization_id", ctx.organizationId).eq("client_id", clientId).neq("status", "cancelado").gte("starts_at", new Date().toISOString()).order("starts_at").limit(8);
-  return { ok: true, appointments: (data ?? []).map((a) => ({ id: a.id, status: a.status, service_id: a.service_id, service_name: a.services?.name, professional_id: a.professional_id, professional_name: a.professionals?.name, date: formatInTimeZone(new Date(a.starts_at), ctx.timezone, "yyyy-MM-dd"), time: formatInTimeZone(new Date(a.starts_at), ctx.timezone, "HH:mm") })) };
-}
+async function listAppointments(ctx:Context){const clientId=await getClientId(ctx);if(!clientId)return{ok:true,appointments:[]};const{data}=await ctx.db.from("appointments").select("id,starts_at,status,service_id,professional_id,services(name),professionals(name)").eq("organization_id",ctx.organizationId).eq("client_id",clientId).neq("status","cancelado").gte("starts_at",new Date().toISOString()).order("starts_at").limit(8);return{ok:true,appointments:(data??[]).map((a:any)=>({id:a.id,status:a.status,service_id:a.service_id,service_name:a.services?.name,professional_id:a.professional_id,professional_name:a.professionals?.name,date:formatInTimeZone(new Date(a.starts_at),ctx.timezone,"yyyy-MM-dd"),time:formatInTimeZone(new Date(a.starts_at),ctx.timezone,"HH:mm")}))}}
+async function cancelAppointment(ctx:Context,id:string){const clientId=await getClientId(ctx);if(!clientId)return{ok:false,error:"Cliente não identificado"};const{data}=await ctx.db.from("appointments").select("id,status,starts_at").eq("id",id).eq("organization_id",ctx.organizationId).eq("client_id",clientId).maybeSingle();if(!data||data.status==="cancelado"||new Date(data.starts_at)<=new Date())return{ok:false,error:"Agendamento não pode ser cancelado"};const{error}=await ctx.db.from("appointments").update({status:"cancelado"}).eq("id",id);return error?{ok:false,error:"Falha ao cancelar"}:{ok:true}}
+async function reschedule(ctx:Context,args:{appointment_id:string;professional_id:string;date:string;time:string}){const clientId=await getClientId(ctx);if(!clientId)return{ok:false,error:"Cliente não identificado"};const{data:appointment}=await ctx.db.from("appointments").select("id,service_id,status,starts_at").eq("id",args.appointment_id).eq("organization_id",ctx.organizationId).eq("client_id",clientId).maybeSingle();if(!appointment?.service_id||appointment.status==="cancelado"||new Date(appointment.starts_at)<=new Date())return{ok:false,error:"Agendamento não pode ser remarcado"};const service=ctx.services.find(s=>s.id===appointment.service_id);if(!service)return{ok:false,error:"Serviço indisponível"};const available=await slots(ctx,{service_id:service.id,professional_id:args.professional_id,date:args.date,exclude_appointment_id:appointment.id});if(!available.ok||!available.slots.some((s:any)=>s.time===args.time&&s.professional_id===args.professional_id))return{ok:false,error:"Novo horário indisponível"};const start=fromZonedTime(`${args.date}T${args.time}:00`,ctx.timezone),end=new Date(start.getTime()+service.duration_minutes*60000);const{error}=await ctx.db.from("appointments").update({professional_id:args.professional_id,starts_at:start.toISOString(),ends_at:end.toISOString(),status:"agendado"}).eq("id",appointment.id);return error?{ok:false,error:"Falha ao remarcar"}:{ok:true,date:args.date,time:args.time}}
+async function openai(apiKey:string,model:string,payload:Record<string,unknown>){const response=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:`Bearer ${apiKey}`,"Content-Type":"application/json"},body:JSON.stringify({model,max_output_tokens:600,parallel_tool_calls:false,...payload})});if(!response.ok){console.error(await response.text());throw new Error("AI")}return await response.json() as any}
+function textOf(response:any){if(response.output_text?.trim())return response.output_text.trim();for(const item of response.output??[])for(const part of(Array.isArray(item.content)?item.content:[]))if(part.type==="output_text"&&typeof part.text==="string")return part.text;return""}
 
-async function cancelAppointment(ctx: Context, id: string) {
-  const clientId = await getClientId(ctx);
-  if (!clientId) return { ok: false, error: "Cliente não identificado" };
-  const { data } = await ctx.db.from("appointments").select("id,status,starts_at,services(name),professionals(name)").eq("id", id).eq("organization_id", ctx.organizationId).eq("client_id", clientId).maybeSingle();
-  if (!data || data.status === "cancelado" || new Date(data.starts_at) <= new Date()) return { ok: false, error: "Agendamento não pode ser cancelado" };
-  const { error } = await ctx.db.from("appointments").update({ status: "cancelado" }).eq("id", id);
-  return error ? { ok: false, error: "Falha ao cancelar" } : { ok: true };
-}
-
-async function reschedule(ctx: Context, args: { appointment_id: string; professional_id: string; date: string; time: string }) {
-  const clientId = await getClientId(ctx);
-  if (!clientId) return { ok: false, error: "Cliente não identificado" };
-  const { data: appointment } = await ctx.db.from("appointments").select("id,service_id,status,starts_at").eq("id", args.appointment_id).eq("organization_id", ctx.organizationId).eq("client_id", clientId).maybeSingle();
-  if (!appointment?.service_id || appointment.status === "cancelado" || new Date(appointment.starts_at) <= new Date()) return { ok: false, error: "Agendamento não pode ser remarcado" };
-  const service = ctx.services.find((s) => s.id === appointment.service_id);
-  if (!service) return { ok: false, error: "Serviço indisponível" };
-  const available = await slots(ctx, { service_id: service.id, professional_id: args.professional_id, date: args.date, exclude_appointment_id: appointment.id });
-  if (!available.ok || !available.slots.some((s) => s.time === args.time && s.professional_id === args.professional_id)) return { ok: false, error: "Novo horário indisponível" };
-  const start = fromZonedTime(`${args.date}T${args.time}:00`, ctx.timezone);
-  const end = new Date(start.getTime() + service.duration_minutes * 60000);
-  const { error } = await ctx.db.from("appointments").update({ professional_id: args.professional_id, starts_at: start.toISOString(), ends_at: end.toISOString(), status: "agendado" }).eq("id", appointment.id);
-  return error ? { ok: false, error: "Falha ao remarcar" } : { ok: true, date: args.date, time: args.time };
-}
-
-async function openai(apiKey: string, model: string, payload: Record<string, unknown>) {
-  const response = await fetch("https://api.openai.com/v1/responses", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ model, max_output_tokens: 600, parallel_tool_calls: false, ...payload }) });
-  if (!response.ok) { console.error(await response.text()); throw new Error("AI"); }
-  return await response.json() as { output?: Array<Record<string, unknown>>; output_text?: string };
-}
-
-function textOf(response: { output?: Array<Record<string, unknown>>; output_text?: string }) {
-  if (response.output_text?.trim()) return response.output_text.trim();
-  for (const item of response.output ?? []) for (const part of (Array.isArray(item.content) ? item.content as Array<Record<string, unknown>> : [])) if (part.type === "output_text" && typeof part.text === "string") return part.text;
-  return "";
-}
-
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
-  if (req.method !== "POST") return reply({ error: "Método não permitido" }, 405);
-  const url = Deno.env.get("SUPABASE_URL"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"), apiKey = Deno.env.get("OPENAI_API_KEY"), model = Deno.env.get("OPENAI_MODEL") || "gpt-5.6-luna";
-  if (!url || !serviceKey || !apiKey) return reply({ error: "Serviço não configurado" }, 500);
-  const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  let body: { organizationSlug?: string; publicToken?: string; message?: string; name?: string; phone?: string };
-  try { body = await req.json(); } catch { return reply({ error: "JSON inválido" }, 400); }
-  const message = body.message?.trim();
-  if (!message || message.length > 1500) return reply({ error: "Mensagem inválida" }, 400);
-
-  let conversation: any = null;
-  if (body.publicToken) {
-    const { data } = await db.from("conversations").select("id,organization_id,client_id,status,contact_name,contact_phone,public_token").eq("public_token", body.publicToken).eq("channel", "site").maybeSingle();
-    conversation = data;
-  } else {
-    if (!body.organizationSlug) return reply({ error: "organizationSlug é obrigatório para iniciar a conversa" }, 400);
-    const { data: org } = await db.from("organizations").select("id,is_blocked").eq("slug", body.organizationSlug).maybeSingle();
-    if (!org || org.is_blocked) return reply({ error: "Empresa indisponível" }, 404);
-    const { data, error } = await db.from("conversations").insert({ organization_id: org.id, channel: "site", status: "ia", contact_name: body.name?.trim() || null, contact_phone: body.phone?.trim() || null }).select("id,organization_id,client_id,status,contact_name,contact_phone,public_token").single();
-    if (error || !data) return reply({ error: "Não foi possível iniciar a conversa" }, 500);
-    conversation = data;
-  }
-  if (!conversation) return reply({ error: "Conversa inválida" }, 404);
-  if (conversation.status === "encerrada") return reply({ error: "Esta conversa foi encerrada" }, 409);
-
-  const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString();
-  const { count } = await db.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", conversation.id).eq("role", "client").gte("created_at", oneMinuteAgo);
-  if ((count ?? 0) >= 8) return reply({ error: "Muitas mensagens em pouco tempo. Tente novamente em instantes." }, 429);
-
-  await db.from("messages").insert({ organization_id: conversation.organization_id, conversation_id: conversation.id, role: "client", content: message, metadata: { channel: "site" } });
-  await db.from("conversations").update({ last_message_at: new Date().toISOString(), contact_name: body.name?.trim() || conversation.contact_name, contact_phone: body.phone?.trim() || conversation.contact_phone }).eq("id", conversation.id);
-  if (conversation.status === "humano") return reply({ publicToken: conversation.public_token, status: "humano", message: null });
-
-  const [orgRes, settingsRes, servicesRes, professionalsRes, hoursRes, faqRes, historyRes] = await Promise.all([
-    db.from("organizations").select("name,segment,phone,email,address,city,state,description,policies,timezone").eq("id", conversation.organization_id).single(),
-    db.from("ai_settings").select("assistant_name,tone,greeting,custom_rules,is_enabled").eq("organization_id", conversation.organization_id).maybeSingle(),
-    db.from("services").select("id,name,description,price_cents,duration_minutes,professional_id").eq("organization_id", conversation.organization_id).eq("is_active", true),
-    db.from("professionals").select("id,name,role_title").eq("organization_id", conversation.organization_id).eq("is_active", true),
-    db.from("business_hours").select("weekday,is_open,opens_at,closes_at,break_start,break_end").eq("organization_id", conversation.organization_id),
-    db.from("faqs").select("question,answer").eq("organization_id", conversation.organization_id),
-    db.from("messages").select("role,content").eq("conversation_id", conversation.id).order("created_at", { ascending: false }).limit(24),
-  ]);
-  const settings = settingsRes.data;
-  if (settings?.is_enabled === false) return reply({ publicToken: conversation.public_token, status: "ia_desativada", message: null });
-  const organization = orgRes.data;
-  const services = (servicesRes.data ?? []) as Service[];
-  const professionals = (professionalsRes.data ?? []) as Professional[];
-  const hours = (hoursRes.data ?? []) as BusinessHour[];
-  const timezone = organization?.timezone || "America/Sao_Paulo";
-  const ctx: Context = { db, organizationId: conversation.organization_id, conversationId: conversation.id, clientId: conversation.client_id, contactName: body.name?.trim() || conversation.contact_name, contactPhone: body.phone?.trim() || conversation.contact_phone, timezone, services, professionals, hours };
-  const history = (historyRes.data ?? []).reverse();
-
-  const instructions = `Você é ${settings?.assistant_name || "Júlia"}, recepcionista virtual de ${organization?.name || "esta empresa"}. Responda em português do Brasil, em tom ${settings?.tone || "amigável"}, curto e profissional.
-Nunca invente informações. Use list_available_slots antes de oferecer horários. Use list_client_appointments antes de cancelar ou remarcar. Só crie, cancele ou remarque após confirmação explícita do cliente. Ofereça no máximo 3 horários por mensagem. Não dê diagnóstico médico. Se não souber, diga: "Não tenho essa informação no momento. Posso encaminhar você para nossa equipe."
-${settings?.custom_rules ? `Regras da empresa: ${settings.custom_rules}` : ""}
-Contexto: ${JSON.stringify({ organization, services: services.map((s) => ({ ...s, price: s.price_cents / 100 })), professionals, business_hours: hours, faq: faqRes.data ?? [], current_datetime: new Date().toISOString(), timezone, contact: { name: ctx.contactName, phone: ctx.contactPhone } })}`;
-
-  const tools = [
-    { type: "function", name: "list_available_slots", strict: true, description: "Consulta horários livres reais.", parameters: { type: "object", properties: { service_id: { type: "string" }, professional_id: { type: ["string", "null"] }, date: { type: "string" } }, required: ["service_id", "professional_id", "date"], additionalProperties: false } },
-    { type: "function", name: "create_appointment", strict: true, description: "Cria um agendamento confirmado pelo cliente.", parameters: { type: "object", properties: { service_id: { type: "string" }, professional_id: { type: "string" }, date: { type: "string" }, time: { type: "string" }, client_name: { type: "string" }, client_phone: { type: "string" } }, required: ["service_id", "professional_id", "date", "time", "client_name", "client_phone"], additionalProperties: false } },
-    { type: "function", name: "list_client_appointments", strict: true, description: "Lista próximos agendamentos do cliente.", parameters: { type: "object", properties: {}, required: [], additionalProperties: false } },
-    { type: "function", name: "cancel_appointment", strict: true, description: "Cancela um agendamento confirmado pelo cliente.", parameters: { type: "object", properties: { appointment_id: { type: "string" } }, required: ["appointment_id"], additionalProperties: false } },
-    { type: "function", name: "reschedule_appointment", strict: true, description: "Remarca um agendamento para horário confirmado pelo cliente.", parameters: { type: "object", properties: { appointment_id: { type: "string" }, professional_id: { type: "string" }, date: { type: "string" }, time: { type: "string" } }, required: ["appointment_id", "professional_id", "date", "time"], additionalProperties: false } },
-  ];
-  let input: Array<Record<string, unknown>> = history.map((m: any) => ({ role: m.role === "client" ? "user" : "assistant", content: m.content }));
-  let ai: any;
-  try {
-    ai = await openai(apiKey, model, { instructions, input, tools, tool_choice: "auto" });
-    for (let i = 0; i < 5; i++) {
-      const calls = (ai.output ?? []).filter((x: any) => x.type === "function_call") as FunctionCall[];
-      if (!calls.length) break;
-      input = [...input, ...(ai.output ?? [])];
-      for (const call of calls) {
-        const args = JSON.parse(call.arguments || "{}");
-        let output: unknown;
-        if (call.name === "list_available_slots") output = await slots(ctx, args);
-        else if (call.name === "create_appointment") output = await createAppointment(ctx, args);
-        else if (call.name === "list_client_appointments") output = await listAppointments(ctx);
-        else if (call.name === "cancel_appointment") output = await cancelAppointment(ctx, args.appointment_id);
-        else if (call.name === "reschedule_appointment") output = await reschedule(ctx, args);
-        else output = { ok: false, error: "Operação desconhecida" };
-        input.push({ type: "function_call_output", call_id: call.call_id, output: JSON.stringify(output) });
-      }
-      ai = await openai(apiKey, model, { instructions, input, tools, tool_choice: "auto" });
-    }
-  } catch { return reply({ error: "Não foi possível responder agora" }, 502); }
-  const answer = textOf(ai).trim();
-  if (!answer) return reply({ error: "Resposta vazia" }, 502);
-  const { data: saved } = await db.from("messages").insert({ organization_id: conversation.organization_id, conversation_id: conversation.id, role: "ai", content: answer, metadata: { provider: "openai", model, channel: "site" } }).select("id,role,content,created_at").single();
-  await db.from("conversations").update({ last_message_at: new Date().toISOString() }).eq("id", conversation.id);
-  return reply({ publicToken: conversation.public_token, status: "ia", message: saved });
+Deno.serve(async(req)=>{
+  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});if(req.method!=="POST")return reply({error:"Método não permitido"},405);
+  const url=Deno.env.get("SUPABASE_URL"),serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),apiKey=Deno.env.get("OPENAI_API_KEY"),model=Deno.env.get("OPENAI_MODEL")||"gpt-5.6-luna";
+  if(!url||!serviceKey)return reply({error:"Serviço não configurado"},500);if(!apiKey)return reply({error:"A IA ainda não possui uma chave OpenAI configurada. O administrador precisa adicionar OPENAI_API_KEY nos Secrets das Edge Functions."},503);
+  const db=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});let body:{organizationSlug?:string;publicToken?:string;message?:string;name?:string;phone?:string};try{body=await req.json()}catch{return reply({error:"JSON inválido"},400)}
+  const message=body.message?.trim();if(!message||message.length>1500)return reply({error:"Mensagem inválida"},400);
+  let conversation:any=null;
+  if(body.publicToken){const{data}=await db.from("conversations").select("id,organization_id,client_id,status,contact_name,contact_phone,public_token,channel").eq("public_token",body.publicToken).in("channel",["site","whatsapp"]).maybeSingle();conversation=data;if(conversation&&body.organizationSlug){const{data:org}=await db.from("organizations").select("id").eq("id",conversation.organization_id).eq("slug",body.organizationSlug).maybeSingle();if(!org)conversation=null}}
+  else{if(!body.organizationSlug)return reply({error:"organizationSlug é obrigatório para iniciar a conversa"},400);const{data:org}=await db.from("organizations").select("id,is_blocked").eq("slug",body.organizationSlug).maybeSingle();if(!org||org.is_blocked)return reply({error:"Empresa indisponível"},404);const{data,error}=await db.from("conversations").insert({organization_id:org.id,channel:"site",status:"ia",contact_name:body.name?.trim()||null,contact_phone:body.phone?.trim()||null}).select("id,organization_id,client_id,status,contact_name,contact_phone,public_token,channel").single();if(error||!data)return reply({error:"Não foi possível iniciar a conversa"},500);conversation=data}
+  if(!conversation)return reply({error:"Conversa inválida"},404);if(conversation.status==="encerrada")return reply({error:"Esta conversa foi encerrada"},409);
+  const oneMinuteAgo=new Date(Date.now()-60000).toISOString();const{count}=await db.from("messages").select("id",{count:"exact",head:true}).eq("conversation_id",conversation.id).eq("role","client").gte("created_at",oneMinuteAgo);if((count??0)>=8)return reply({error:"Muitas mensagens em pouco tempo. Tente novamente em instantes."},429);
+  await db.from("messages").insert({organization_id:conversation.organization_id,conversation_id:conversation.id,role:"client",content:message,metadata:{channel:"site",handoff_from:conversation.channel}});await db.from("conversations").update({last_message_at:new Date().toISOString(),contact_name:body.name?.trim()||conversation.contact_name,contact_phone:body.phone?.trim()||conversation.contact_phone}).eq("id",conversation.id);if(conversation.status==="humano")return reply({publicToken:conversation.public_token,status:"humano",message:null});
+  const[orgRes,settingsRes,servicesRes,professionalsRes,hoursRes,faqRes,historyRes]=await Promise.all([db.from("organizations").select("name,segment,phone,email,address,city,state,description,policies,timezone").eq("id",conversation.organization_id).single(),db.from("ai_settings").select("assistant_name,tone,greeting,custom_rules,is_enabled").eq("organization_id",conversation.organization_id).maybeSingle(),db.from("services").select("id,name,description,price_cents,duration_minutes,professional_id").eq("organization_id",conversation.organization_id).eq("is_active",true),db.from("professionals").select("id,name,role_title").eq("organization_id",conversation.organization_id).eq("is_active",true),db.from("business_hours").select("weekday,is_open,opens_at,closes_at,break_start,break_end").eq("organization_id",conversation.organization_id),db.from("faqs").select("question,answer").eq("organization_id",conversation.organization_id),db.from("messages").select("role,content").eq("conversation_id",conversation.id).order("created_at",{ascending:false}).limit(24)]);
+  const settings=settingsRes.data;if(settings?.is_enabled===false)return reply({publicToken:conversation.public_token,status:"ia_desativada",message:null});const organization=orgRes.data,services=(servicesRes.data??[])as Service[],professionals=(professionalsRes.data??[])as Professional[],hours=(hoursRes.data??[])as BusinessHour[],timezone=organization?.timezone||"America/Sao_Paulo",ctx:Context={db,organizationId:conversation.organization_id,conversationId:conversation.id,clientId:conversation.client_id,contactName:body.name?.trim()||conversation.contact_name,contactPhone:body.phone?.trim()||conversation.contact_phone,timezone,services,professionals,hours},history=(historyRes.data??[]).reverse();
+  const instructions=`Você é ${settings?.assistant_name||"Júlia"}, recepcionista virtual de ${organization?.name||"esta empresa"}. Responda em português do Brasil, em tom ${settings?.tone||"amigável"}, curto e profissional.\nNunca invente informações. Use list_available_slots antes de oferecer horários. Use list_client_appointments antes de cancelar ou remarcar. Só crie, cancele ou remarque após confirmação explícita do cliente. Ofereça no máximo 3 horários por mensagem. Não dê diagnóstico médico. Se não souber, diga: \"Não tenho essa informação no momento. Posso encaminhar você para nossa equipe.\"\n${settings?.custom_rules?`Regras da empresa: ${settings.custom_rules}`:""}\nContexto: ${JSON.stringify({organization,services:services.map(s=>({...s,price:s.price_cents/100})),professionals,business_hours:hours,faq:faqRes.data??[],current_datetime:new Date().toISOString(),timezone,contact:{name:ctx.contactName,phone:ctx.contactPhone}})}`;
+  const tools=[{type:"function",name:"list_available_slots",strict:true,description:"Consulta horários livres reais.",parameters:{type:"object",properties:{service_id:{type:"string"},professional_id:{type:["string","null"]},date:{type:"string"}},required:["service_id","professional_id","date"],additionalProperties:false}},{type:"function",name:"create_appointment",strict:true,description:"Cria um agendamento confirmado pelo cliente.",parameters:{type:"object",properties:{service_id:{type:"string"},professional_id:{type:"string"},date:{type:"string"},time:{type:"string"},client_name:{type:"string"},client_phone:{type:"string"}},required:["service_id","professional_id","date","time","client_name","client_phone"],additionalProperties:false}},{type:"function",name:"list_client_appointments",strict:true,description:"Lista próximos agendamentos do cliente.",parameters:{type:"object",properties:{},required:[],additionalProperties:false}},{type:"function",name:"cancel_appointment",strict:true,description:"Cancela um agendamento confirmado pelo cliente.",parameters:{type:"object",properties:{appointment_id:{type:"string"}},required:["appointment_id"],additionalProperties:false}},{type:"function",name:"reschedule_appointment",strict:true,description:"Remarca um agendamento para horário confirmado pelo cliente.",parameters:{type:"object",properties:{appointment_id:{type:"string"},professional_id:{type:"string"},date:{type:"string"},time:{type:"string"}},required:["appointment_id","professional_id","date","time"],additionalProperties:false}}];
+  let input:Array<Record<string,unknown>>=history.map((m:any)=>({role:m.role==="client"?"user":"assistant",content:m.content})),ai:any;try{ai=await openai(apiKey,model,{instructions,input,tools,tool_choice:"auto"});for(let i=0;i<5;i++){const calls=(ai.output??[]).filter((x:any)=>x.type==="function_call")as FunctionCall[];if(!calls.length)break;input=[...input,...(ai.output??[])];for(const call of calls){const args=JSON.parse(call.arguments||"{}");let output:any;if(call.name==="list_available_slots")output=await slots(ctx,args);else if(call.name==="create_appointment")output=await createAppointment(ctx,args);else if(call.name==="list_client_appointments")output=await listAppointments(ctx);else if(call.name==="cancel_appointment")output=await cancelAppointment(ctx,args.appointment_id);else if(call.name==="reschedule_appointment")output=await reschedule(ctx,args);else output={ok:false,error:"Operação desconhecida"};input.push({type:"function_call_output",call_id:call.call_id,output:JSON.stringify(output)})}ai=await openai(apiKey,model,{instructions,input,tools,tool_choice:"auto"})}}catch{return reply({error:"Não foi possível responder agora"},502)}
+  const answer=textOf(ai).trim();if(!answer)return reply({error:"Resposta vazia"},502);const{data:saved}=await db.from("messages").insert({organization_id:conversation.organization_id,conversation_id:conversation.id,role:"ai",content:answer,metadata:{provider:"openai",model,channel:"site"}}).select("id,role,content,created_at").single();await db.from("conversations").update({last_message_at:new Date().toISOString()}).eq("id",conversation.id);return reply({publicToken:conversation.public_token,status:"ia",message:saved})
 });
