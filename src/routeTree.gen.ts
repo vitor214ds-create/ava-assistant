@@ -17,6 +17,7 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as ProfissionaisRouteImport } from './routes/profissionais'
 import { Route as ServicosRouteImport } from './routes/servicos'
+import { Route as ConversasRouteImport } from './routes/conversas'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
 const LoginRoute = LoginRouteImport.update({ id: '/login', path: '/login', getParentRoute: () => rootRouteImport } as any)
@@ -27,6 +28,7 @@ const AgendaRoute = AgendaRouteImport.update({ id: '/agenda', path: '/agenda', g
 const ClientesRoute = ClientesRouteImport.update({ id: '/clientes', path: '/clientes', getParentRoute: () => rootRouteImport } as any)
 const ProfissionaisRoute = ProfissionaisRouteImport.update({ id: '/profissionais', path: '/profissionais', getParentRoute: () => rootRouteImport } as any)
 const ServicosRoute = ServicosRouteImport.update({ id: '/servicos', path: '/servicos', getParentRoute: () => rootRouteImport } as any)
+const ConversasRoute = ConversasRouteImport.update({ id: '/conversas', path: '/conversas', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -38,6 +40,7 @@ export interface FileRoutesByFullPath {
   '/clientes': typeof ClientesRoute
   '/profissionais': typeof ProfissionaisRoute
   '/servicos': typeof ServicosRoute
+  '/conversas': typeof ConversasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -49,6 +52,7 @@ export interface FileRoutesByTo {
   '/clientes': typeof ClientesRoute
   '/profissionais': typeof ProfissionaisRoute
   '/servicos': typeof ServicosRoute
+  '/conversas': typeof ConversasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,13 +65,14 @@ export interface FileRoutesById {
   '/clientes': typeof ClientesRoute
   '/profissionais': typeof ProfissionaisRoute
   '/servicos': typeof ServicosRoute
+  '/conversas': typeof ConversasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos'
+  fullPaths: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos'
-  id: '__root__' | '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos'
+  to: '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas'
+  id: '__root__' | '/' | '/login' | '/cadastro' | '/onboarding' | '/dashboard' | '/agenda' | '/clientes' | '/profissionais' | '/servicos' | '/conversas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -80,6 +85,7 @@ export interface RootRouteChildren {
   ClientesRoute: typeof ClientesRoute
   ProfissionaisRoute: typeof ProfissionaisRoute
   ServicosRoute: typeof ServicosRoute
+  ConversasRoute: typeof ConversasRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -93,6 +99,7 @@ declare module '@tanstack/react-router' {
     '/clientes': { id: '/clientes'; path: '/clientes'; fullPath: '/clientes'; preLoaderRoute: typeof ClientesRouteImport; parentRoute: typeof rootRouteImport }
     '/profissionais': { id: '/profissionais'; path: '/profissionais'; fullPath: '/profissionais'; preLoaderRoute: typeof ProfissionaisRouteImport; parentRoute: typeof rootRouteImport }
     '/servicos': { id: '/servicos'; path: '/servicos'; fullPath: '/servicos'; preLoaderRoute: typeof ServicosRouteImport; parentRoute: typeof rootRouteImport }
+    '/conversas': { id: '/conversas'; path: '/conversas'; fullPath: '/conversas'; preLoaderRoute: typeof ConversasRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
 
@@ -106,6 +113,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClientesRoute,
   ProfissionaisRoute,
   ServicosRoute,
+  ConversasRoute,
 }
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()
 
