@@ -7,6 +7,20 @@ const MODEL = "openai/gpt-5.6-sol";
 
 type ToolResult = Record<string, unknown>;
 
+type ToolArgs = {
+  date?: string;
+  service_id?: string;
+  professional_id?: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  starts_at?: string;
+  client_name?: string;
+  client_phone?: string;
+  appointment_id?: string;
+  reason?: string;
+};
+
 const TOOLS = [
   {
     type: "function",
@@ -201,7 +215,7 @@ async function runTool(
   organizationId: string,
   conversationId: string | null,
   name: string,
-  args: Record<string, string>,
+  args: ToolArgs,
   ctx: Awaited<ReturnType<typeof loadContext>>,
 ): Promise<ToolResult> {
   const db = supabaseAdmin;
@@ -223,7 +237,7 @@ async function runTool(
     case "check_availability": {
       const service = ctx.services.find((s) => s.id === args.service_id);
       if (!service) return { error: "Serviço não encontrado." };
-      const date = args.date;
+      const date = args.date ?? "";
       const weekday = new Date(`${date}T12:00:00`).getDay();
       const hours = ctx.hours.find((h) => h.weekday === weekday);
       const dayStart = new Date(`${date}T00:00:00`).toISOString();
@@ -258,8 +272,8 @@ async function runTool(
         .upsert(
           {
             organization_id: organizationId,
-            name: args.name,
-            phone: args.phone,
+            name: args.name ?? "",
+            phone: args.phone ?? "",
             email: args.email ?? null,
           },
           { onConflict: "id" },
@@ -271,7 +285,7 @@ async function runTool(
     case "create_appointment": {
       const service = ctx.services.find((s) => s.id === args.service_id);
       if (!service) return { error: "Serviço não encontrado." };
-      const start = new Date(args.starts_at);
+      const start = new Date(args.starts_at ?? "");
       const end = new Date(start.getTime() + service.duration_minutes * 60000);
 
       const { data: conflicts } = await db
@@ -291,14 +305,14 @@ async function runTool(
         .from("clients")
         .select("id")
         .eq("organization_id", organizationId)
-        .eq("phone", args.client_phone)
+        .eq("phone", args.client_phone ?? "")
         .maybeSingle();
       if (existing) {
         clientId = existing.id;
       } else {
         const { data: created } = await db
           .from("clients")
-          .insert({ organization_id: organizationId, name: args.client_name, phone: args.client_phone })
+          .insert({ organization_id: organizationId, name: args.client_name ?? "", phone: args.client_phone ?? "" })
           .select("id")
           .maybeSingle();
         clientId = created?.id ?? null;
@@ -334,7 +348,7 @@ async function runTool(
         .from("clients")
         .select("id, name")
         .eq("organization_id", organizationId)
-        .eq("phone", args.phone)
+        .eq("phone", args.phone ?? "")
         .maybeSingle();
       if (!client) return { appointments: [] };
       const { data: appts } = await db
@@ -358,7 +372,7 @@ async function runTool(
       await db
         .from("appointments")
         .update({ status: "cancelado" })
-        .eq("id", args.appointment_id)
+        .eq("id", args.appointment_id ?? "")
         .eq("organization_id", organizationId);
       await db.from("notifications").insert({
         organization_id: organizationId,
@@ -372,12 +386,12 @@ async function runTool(
       const { data: appt } = await db
         .from("appointments")
         .select("id, service_id")
-        .eq("id", args.appointment_id)
+        .eq("id", args.appointment_id ?? "")
         .eq("organization_id", organizationId)
         .maybeSingle();
       if (!appt) return { error: "Agendamento não encontrado." };
       const service = ctx.services.find((s) => s.id === appt.service_id);
-      const start = new Date(args.starts_at);
+      const start = new Date(args.starts_at ?? "");
       const end = new Date(start.getTime() + (service?.duration_minutes ?? 30) * 60000);
       const { data: conflicts } = await db
         .from("appointments")
@@ -479,7 +493,7 @@ export async function processMessage(params: {
 
     for (const call of calls) {
       input.push(call);
-      let args: Record<string, string> = {};
+      let args: ToolArgs = {};
       try {
         args = JSON.parse(call.arguments ?? "{}");
       } catch {
